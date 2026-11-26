@@ -2,7 +2,7 @@
 
 A public, secret-free harness of **skills, commands and workflows for [Claude Code](https://claude.com/claude-code)**. It keeps agents inside architectural boundaries, hardens request/response paths, hands work between sessions cheaply, slices big tasks into safe milestones, and produces evidence-based QA reports.
 
-> **Status: Phase 1 of 5.** The repo skeleton, repo-hygiene tooling and the **architecture skill + style registry** are done. The other components are scoped in [docs/ROADMAP.md](docs/ROADMAP.md) and land phase by phase.
+> **Status: Phase 2 of 5.** Repo hygiene tooling, the **architecture skill + style registry** and the **request/response hardening skill** are done. The other components are scoped in [docs/ROADMAP.md](docs/ROADMAP.md) and land phase by phase.
 
 ## Components
 
@@ -10,7 +10,7 @@ A public, secret-free harness of **skills, commands and workflows for [Claude Co
 |---|---|---|
 | Architecture skill (Compose & Register / Read & Enforce) | [`skills/architecture/`](skills/architecture/SKILL.md) | ✅ Phase 1 |
 | Architecture style registry (MVC, Layered, Hexagonal, Service–Middleware–Aggregate) | [`registry/architectures/`](registry/architectures/README.md) | ✅ Phase 1 |
-| Request & response hardening skill | `skills/req-res-hardening/` | ⏳ Phase 2 |
+| Request & response hardening skill | [`skills/req-res-hardening/`](skills/req-res-hardening/SKILL.md) | ✅ Phase 2 |
 | `/switch` context handoff command + hooks | `commands/switch.md`, `hooks/`, `scripts/` | ⏳ Phase 3 |
 | Project Dam (incremental milestones) | `skills/project-dam/` | ⏳ Phase 4 |
 | QA report generator (Markdown + optional `.docx`) | `skills/qa-report/` | ⏳ Phase 5 |
@@ -51,6 +51,15 @@ Use the architecture skill: infer our architecture from this repo, show drift, t
 the "bulk order import" feature inside its layer boundaries.
 ```
 
+**Harden** request/response paths:
+
+```text
+Use the req-res-hardening skill to audit src/api for injection, mass assignment and data leaks,
+and give me prioritized findings with file:line and fixes. Report only, don't change code.
+```
+
+A sample report on a fictional vulnerable app is in [`examples/req-res-hardening/`](examples/req-res-hardening/sample-report.md). The optional candidate scanner is `bash skills/req-res-hardening/scripts/scan.sh <path>`.
+
 **Refactor** toward a style:
 
 ```text
@@ -73,7 +82,8 @@ claude-harness/
 ├── registry/architectures/  reusable architecture specs
 ├── scripts/                 check-secrets.sh, validate-registry.py, validate-skills.py
 └── skills/
-    └── architecture/        SKILL.md, references/, templates/
+    ├── architecture/        SKILL.md, references/, templates/
+    └── req-res-hardening/   SKILL.md, references/, templates/, scripts/scan.sh
 ```
 
 Each skill is `skills/<name>/SKILL.md` (frontmatter `name` = directory, `description` says *when* to use it) with progressive-disclosure detail in `references/` and `templates/`. See [docs/conventions.md](docs/conventions.md).
