@@ -2,7 +2,7 @@
 
 A public, secret-free harness of **skills, commands and workflows for [Claude Code](https://claude.com/claude-code)**. It keeps agents inside architectural boundaries, hardens request/response paths, hands work between sessions cheaply, slices big tasks into safe milestones, and produces evidence-based QA reports.
 
-> **Status: Phase 3 of 5.** Repo hygiene tooling, the **architecture skill + style registry**, the **request/response hardening skill** and the **`/switch` handoff command** are done. The other components are scoped in [docs/ROADMAP.md](docs/ROADMAP.md) and land phase by phase.
+> **Status: Phase 4 of 5.** Repo hygiene tooling, the **architecture skill + style registry**, the **request/response hardening skill** the **`/switch` handoff command** and **Project Dam** are done. The other components are scoped in [docs/ROADMAP.md](docs/ROADMAP.md) and land phase by phase.
 
 ## Components
 
@@ -12,7 +12,7 @@ A public, secret-free harness of **skills, commands and workflows for [Claude Co
 | Architecture style registry (MVC, Layered, Hexagonal, Service–Middleware–Aggregate) | [`registry/architectures/`](registry/architectures/README.md) | ✅ Phase 1 |
 | Request & response hardening skill | [`skills/req-res-hardening/`](skills/req-res-hardening/SKILL.md) | ✅ Phase 2 |
 | `/switch` context handoff command + hooks | [`commands/switch.md`](commands/switch.md), [docs/switch.md](docs/switch.md) | ✅ Phase 3 |
-| Project Dam (incremental milestones) | `skills/project-dam/` | ⏳ Phase 4 |
+| Project Dam (incremental milestones) | [`skills/project-dam/`](skills/project-dam/SKILL.md) | ✅ Phase 4 |
 | QA report generator (Markdown + optional `.docx`) | `skills/qa-report/` | ⏳ Phase 5 |
 
 ## Install
@@ -67,6 +67,14 @@ A sample report on a fictional vulnerable app is in [`examples/req-res-hardening
 ```
 then `/model sonnet` and `/clear` in the same window (the plugin hook loads the handoff), or `/exit` and run `scripts/switch-launch.sh sonnet`. A slash command cannot run `/model` or `/exit` itself; see [docs/switch.md](docs/switch.md).
 
+**Dam** a big task into milestones:
+
+```text
+Use the project-dam skill to break "bulk order import" into milestones, then implement M1 only.
+```
+
+It writes `.claude/dam/<slug>/PLAN.md` in your project (see [`examples/project-dam/`](examples/project-dam/PLAN-example.md)), runs one gated milestone at a time, and defers anything out of scope to a backlog. Helper: `python3 skills/project-dam/scripts/dam.py check|next|status <plan>`.
+
 **Refactor** toward a style:
 
 ```text
@@ -91,7 +99,8 @@ claude-harness/
 ├── scripts/                 check-secrets.sh, validate-*.py, switch-*.sh, hook scripts
 └── skills/
     ├── architecture/        SKILL.md, references/, templates/
-    └── req-res-hardening/   SKILL.md, references/, templates/, scripts/scan.sh
+    ├── req-res-hardening/   SKILL.md, references/, templates/, scripts/scan.sh
+    └── project-dam/         SKILL.md, references/, templates/, scripts/dam.py
 ```
 
 Each skill is `skills/<name>/SKILL.md` (frontmatter `name` = directory, `description` says *when* to use it) with progressive-disclosure detail in `references/` and `templates/`. See [docs/conventions.md](docs/conventions.md).
