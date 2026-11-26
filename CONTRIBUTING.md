@@ -11,6 +11,7 @@ Follow [registry/architectures/README.md](registry/architectures/README.md). Mus
 - `skills/<name>/SKILL.md` with frontmatter `name` (= directory) and a `description` that says **what it does and when to trigger** (≤ 1024 chars).
 - Keep `SKILL.md` to the workflow; push depth into `references/` and reusable files into `templates/`. Link them with relative paths.
 - Add sanitized, fictional examples under `examples/<skill>/`.
+- Declare `metadata: {tier: free}` in the frontmatter (this repo is the free tier).
 - `python3 scripts/validate-skills.py` must pass.
 
 ## Add a command or hook

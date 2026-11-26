@@ -9,6 +9,8 @@ description: >
   says "architecture", "layers", "where should this code live", "refactor to
   <style>", "enforce boundaries", "register this architecture", or before
   planning any non-trivial feature in a layered codebase.
+metadata:
+  tier: free
 ---
 
 # Architecture skill

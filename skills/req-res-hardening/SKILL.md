@@ -10,6 +10,8 @@ description: >
   tokens, OTPs, PII, stack traces, DB error codes, cross-tenant and existence
   leaks. Use for "harden the API", "security review of endpoints", "check what
   we return to clients", "mass assignment / IDOR / injection audit".
+metadata:
+  tier: free
 ---
 
 # Request & Response hardening

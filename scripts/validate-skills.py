@@ -2,7 +2,7 @@
 """Validate every skills/*/SKILL.md and commands/*.md.
 
 Checks: frontmatter present; skill `name` equals its directory; `description`
-non-empty and <= 1024 chars; relative markdown links resolve to real files.
+non-empty and <= 1024 chars; `metadata.tier` is free or pro; relative markdown links resolve to real files.
 Requires PyYAML. Exit 1 on any error.
 """
 import re
@@ -46,6 +46,9 @@ def main():
             errs.append(f"{rel}: empty description")
         elif len(desc) > 1024:
             errs.append(f"{rel}: description > 1024 chars")
+        tier = (fm.get("metadata") or {}).get("tier") if isinstance(fm.get("metadata"), dict) else None
+        if tier not in ("free", "pro"):
+            errs.append(f"{rel}: declare metadata.tier: free|pro in the frontmatter")
         check_links(skill, text, errs)
     for cmd in sorted((ROOT / "commands").glob("*.md")):
         n += 1

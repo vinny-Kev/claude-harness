@@ -2,7 +2,7 @@
 
 A public, secret-free harness of **skills, commands and workflows for [Claude Code](https://claude.com/claude-code)**. It keeps agents inside architectural boundaries, hardens request/response paths, hands work between sessions cheaply, slices big tasks into safe milestones, and produces evidence-based QA reports.
 
-> **Status: Phase 4 of 5.** Repo hygiene tooling, the **architecture skill + style registry**, the **request/response hardening skill** the **`/switch` handoff command** and **Project Dam** are done. The other components are scoped in [docs/ROADMAP.md](docs/ROADMAP.md) and land phase by phase.
+> **Status: Phase 4 of 5, plus the always-on knowledge-placement rule.** Repo hygiene tooling, the **architecture skill + style registry**, the **request/response hardening skill** the **`/switch` handoff command**, **Project Dam** and **knowledge placement** are done. The other components are scoped in [docs/ROADMAP.md](docs/ROADMAP.md) and land phase by phase.
 
 ## Components
 
@@ -13,7 +13,10 @@ A public, secret-free harness of **skills, commands and workflows for [Claude Co
 | Request & response hardening skill | [`skills/req-res-hardening/`](skills/req-res-hardening/SKILL.md) | ✅ Phase 2 |
 | `/switch` context handoff command + hooks | [`commands/switch.md`](commands/switch.md), [docs/switch.md](docs/switch.md) | ✅ Phase 3 |
 | Project Dam (incremental milestones) | [`skills/project-dam/`](skills/project-dam/SKILL.md) | ✅ Phase 4 |
+| **Knowledge placement** (rule + guard; keeps notes out of `src/`) | [`skills/knowledge-placement/`](skills/knowledge-placement/SKILL.md), [docs/knowledge-placement.md](docs/knowledge-placement.md) | ✅ Free tier, always on |
 | QA report generator (Markdown + optional `.docx`) | `skills/qa-report/` | ⏳ Phase 5 |
+
+> **Free tier:** everything in this repository is free (MIT). See [docs/tiers.md](docs/tiers.md) for what is always on.
 
 ## Install
 
@@ -60,6 +63,15 @@ and give me prioritized findings with file:line and fixes. Report only, don't ch
 
 A sample report on a fictional vulnerable app is in [`examples/req-res-hardening/`](examples/req-res-hardening/sample-report.md). The optional candidate scanner is `bash skills/req-res-hardening/scripts/scan.sh <path>`.
 
+**Keep codebase notes tidy** (always on with the plugin):
+
+```bash
+python3 skills/knowledge-placement/scripts/knowledge.py init --mode external   # notes outside the repo (default)
+python3 skills/knowledge-placement/scripts/knowledge.py init --mode repo-docs  # one folder: docs/codebase/
+python3 skills/knowledge-placement/scripts/knowledge.py check                  # list stray *_SUMMARY.md / src/ docs
+```
+The agent checks your placement preference before writing notes, updates existing files in place, and a guard asks before a stray doc is created in `src/`. Modes, config and permissions: [docs/knowledge-placement.md](docs/knowledge-placement.md).
+
 **Hand off** to a fresh session (cheap, no giant re-read):
 
 ```text
@@ -91,16 +103,18 @@ claude-harness/
 ├── .githooks/pre-commit     secret scan + registry validation
 ├── .github/workflows/       CI: same checks on every push/PR
 ├── commands/                switch.md
-├── hooks/                   hooks.json (SessionStart, UserPromptSubmit, PreCompact)
+├── rules/                   knowledge-placement.md (paste into CLAUDE.md if you skip the plugin)
+├── hooks/                   hooks.json (SessionStart, UserPromptSubmit, PreCompact, PreToolUse)
 ├── templates/               handoff.template.md
-├── docs/                    ROADMAP.md, conventions.md, switch.md
+├── docs/                    ROADMAP.md, conventions.md, switch.md, tiers.md, knowledge-placement.md
 ├── examples/                sanitized, fictional examples only
 ├── registry/architectures/  reusable architecture specs
 ├── scripts/                 check-secrets.sh, validate-*.py, switch-*.sh, hook scripts
 └── skills/
     ├── architecture/        SKILL.md, references/, templates/
     ├── req-res-hardening/   SKILL.md, references/, templates/, scripts/scan.sh
-    └── project-dam/         SKILL.md, references/, templates/, scripts/dam.py
+    ├── project-dam/         SKILL.md, references/, templates/, scripts/dam.py
+    └── knowledge-placement/ SKILL.md, references/, scripts/knowledge.py (+ tests)
 ```
 
 Each skill is `skills/<name>/SKILL.md` (frontmatter `name` = directory, `description` says *when* to use it) with progressive-disclosure detail in `references/` and `templates/`. See [docs/conventions.md](docs/conventions.md).

@@ -8,6 +8,8 @@ description: >
   "break this down", "plan this feature", "milestones", "don't let it sprawl",
   "implement step by step", "this is too big", or any task likely to touch many
   files or take more than one sitting.
+metadata:
+  tier: free
 ---
 
 # Project Dam

@@ -8,6 +8,10 @@
 | **4** ✅ | `skills/project-dam/` | Turns a big task into ordered milestones (scope, boundaries, verification, stop conditions) |
 | **5** | `skills/qa-report/` | Markdown report template + optional `.docx` generation; redaction enforced |
 
+## Always-on rules (free tier)
+
+- **knowledge-placement**: where codebase notes live (external / repo-docs / colocated), update-in-place, stray-doc guard. See [knowledge-placement.md](knowledge-placement.md).
+
 ## Phase 2 — req-res-hardening (outline)
 
 - **Discovery**: find endpoints/routes, validators/schemas, middleware chain, serializers/DTOs per framework.
