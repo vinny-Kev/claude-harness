@@ -2,7 +2,7 @@
 
 A public, secret-free harness of **skills, commands and workflows for [Claude Code](https://claude.com/claude-code)**. It keeps agents inside architectural boundaries, hardens request/response paths, hands work between sessions cheaply, slices big tasks into safe milestones, and produces evidence-based QA reports.
 
-> **Status: all five phases complete, plus the always-on knowledge-placement rule.** Repo hygiene tooling, the **architecture skill + style registry**, the **request/response hardening skill**, the **`/switch` handoff command**, **Project Dam**, the **QA report generator** and **knowledge placement** are done. See [docs/ROADMAP.md](docs/ROADMAP.md).
+> **Status: all five phases complete, plus the always-on knowledge-placement rule.** Repo hygiene tooling, the **architecture skill + style registry**, the **request/response hardening skill**, the **`/switch` handoff command**, **Project Dam**, the **QA report generator**, **debug protocol** and **knowledge placement** are done. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Components
 
@@ -15,6 +15,7 @@ A public, secret-free harness of **skills, commands and workflows for [Claude Co
 | Project Dam (incremental milestones) | [`skills/project-dam/`](skills/project-dam/SKILL.md) | ✅ Phase 4 |
 | **Knowledge placement** (rule + guard; keeps notes out of `src/`) | [`skills/knowledge-placement/`](skills/knowledge-placement/SKILL.md), [docs/knowledge-placement.md](docs/knowledge-placement.md) | ✅ Free tier, always on |
 | QA report generator (Markdown + optional `.docx`) | [`skills/qa-report/`](skills/qa-report/SKILL.md) | ✅ Phase 5 |
+| **Debug protocol** (reproduce, isolate, hypothesize, fix with proof) | [`skills/debug-protocol/`](skills/debug-protocol/SKILL.md) | ✅ Free tier |
 
 > **Free tier:** everything in this repository is free (MIT). See [docs/tiers.md](docs/tiers.md) for what is always on.
 
@@ -103,6 +104,14 @@ python3 skills/qa-report/scripts/redact.py --check qa-output/<date>/QA-REPORT.md
 ```
 
 Sections: executive summary and pass/fail metrics, scope, environment and actors/fixtures, methodology, inventory, auth and authorization matrix, module-by-module success and negative/security scenarios, defect findings (open vs fixed), and remediation. Example: [`examples/qa-report/`](examples/qa-report/QA-REPORT-example.md).
+
+**Debug** systematically instead of guessing:
+
+```text
+Use the debug-protocol skill: the checkout test fails about 1 in 40 runs. Reproduce it first, then find the root cause.
+```
+
+The agent reproduces before fixing, isolates (bisect, minimization), ranks hypotheses with testable predictions, stops after three refuted guesses to re-evaluate, makes the smallest fix, and proves it with a regression test. Helper that quantifies flakiness: `bash skills/debug-protocol/scripts/repro-check.sh -n 20 -- npm test`. Example report: [`examples/debug-protocol/`](examples/debug-protocol/DEBUG-REPORT-example.md).
 
 **Refactor** toward a style:
 

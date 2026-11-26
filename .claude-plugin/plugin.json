@@ -1,6 +1,6 @@
 {
   "name": "claude-harness",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Skills and workflows for Claude Code: architecture enforcement, request/response hardening, context handoff, incremental task planning, and QA reporting.",
   "license": "MIT",
   "keywords": [
@@ -8,6 +8,7 @@
     "security",
     "handoff",
     "planning",
-    "qa"
+    "qa",
+    "debugging"
   ]
 }

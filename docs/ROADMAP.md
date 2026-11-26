@@ -10,6 +10,7 @@
 
 ## Always-on rules (free tier)
 
+- **debug-protocol** (on demand): reproduce-first debugging with a stop rule and a flakiness helper. See [`skills/debug-protocol/`](../skills/debug-protocol/SKILL.md).
 - **knowledge-placement**: where codebase notes live (external / repo-docs / colocated), update-in-place, stray-doc guard. See [knowledge-placement.md](knowledge-placement.md).
 
 ## Phase 2 — req-res-hardening (outline)

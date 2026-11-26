@@ -16,6 +16,7 @@ jobs:
       - run: python3 scripts/validate-skills.py
       - run: for f in scripts/*.sh skills/*/scripts/*.sh; do bash -n "$f"; done
       - run: python3 skills/knowledge-placement/scripts/test_knowledge.py
+      - run: bash skills/debug-protocol/scripts/test_repro_check.sh
       - run: python3 skills/project-dam/scripts/dam.py check examples/project-dam/PLAN-example.md
       - run: python3 skills/project-dam/scripts/dam.py check skills/project-dam/templates/dam-plan.template.md
       - run: python3 skills/qa-report/scripts/build-report.py check examples/qa-report/qa-results-example.yaml
