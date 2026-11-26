@@ -1,0 +1,51 @@
+# Template for qa-results.yaml. Replace placeholders; keep ids stable. See references/results-schema.md.
+# Never put credentials, tokens or real personal data in this file.
+meta:
+  title: "QA Verification Report - <project> <version>"
+  project: "<project>"
+  date: 2026-01-01
+  tester: "<name or agent>"
+  environment:
+    name: "<e.g. Local docker-compose>"
+    kind: local            # local | dev | staging | test | production
+    target: "http://localhost:3000"
+    build: "<commit or version>"
+
+summary: >
+  <3-6 sentences: what was tested, headline result, top risks.>
+
+scope:
+  in: ["<modules/endpoints tested>"]
+  out: ["<explicitly not tested>"]
+
+actors:
+  - {id: A0, role: Anonymous, description: "No credentials", fixture: "-"}
+  - {id: A1, role: "<Role>", description: "<who>", fixture: "qa_user@example.test (password in secret store)"}
+
+fixtures:
+  - {id: F1, description: "<seed data>"}
+
+inventory:
+  - {id: E1, module: "<Module>", kind: endpoint, name: "<Name>", method: GET, path: "/example", auth: "<public|role>"}
+
+scenarios:
+  - id: S1
+    module: "<Module>"
+    inventory: E1
+    type: success          # success | negative | security
+    title: "<What is being verified>"
+    actor: A1
+    request: |
+      GET /example
+    expected: "<expected status and behavior, written before running>"
+    actual: "<observed status and behavior>"
+    result: pass           # pass | fail | blocked | skipped
+    evidence: |
+      HTTP/1.1 200 OK
+    authz: {expected: allow, actual: allow}
+
+defects: []
+
+remediation:
+  - audience: Developers
+    steps: ["<concrete fix steps ordered by severity>"]

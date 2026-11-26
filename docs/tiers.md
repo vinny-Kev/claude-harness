@@ -8,6 +8,7 @@ Each skill declares its tier in its frontmatter (`metadata: {tier: free}`), and 
 | `architecture` + `registry/architectures/` | skill + style registry | on demand |
 | `req-res-hardening` | skill | on demand |
 | `project-dam` | skill | on demand |
+| `qa-report` | skill + report renderer + redactor | on demand |
 | `/switch` handoff (`commands/switch.md`) | command + hooks | `SessionStart` hook loads a pending handoff |
 | **`knowledge-placement`** | **skill + rule + hooks** | **yes: `SessionStart` injects the rule, `PreToolUse` guards stray docs** |
 

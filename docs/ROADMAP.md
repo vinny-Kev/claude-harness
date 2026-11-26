@@ -6,7 +6,7 @@
 | **2** ✅ | `skills/req-res-hardening/` | Scans routes/validators/middleware/serializers; prioritized findings with `file:line` and concrete fixes; checklists for inbound + outbound; sample finding report |
 | **3** ✅ | `/switch` command, hooks, scripts | See design below; handoff file is self-sufficient in a fresh session |
 | **4** ✅ | `skills/project-dam/` | Turns a big task into ordered milestones (scope, boundaries, verification, stop conditions) |
-| **5** | `skills/qa-report/` | Markdown report template + optional `.docx` generation; redaction enforced |
+| **5** ✅ | `skills/qa-report/` | Markdown report template + optional `.docx` generation; redaction enforced |
 
 ## Always-on rules (free tier)
 
@@ -33,6 +33,6 @@ Planned flow:
 
 Milestone schema: id, goal, in-scope, out-of-scope, files/layers touched, dependencies, verification criteria, rollback, "stop here" gate. Integrates with `architecture` for layer placement.
 
-## Phase 5 — qa-report (outline)
+## Phase 5 — qa-report (built)
 
 Sections: Executive Summary & pass/fail metrics · Scope · Environment & actors/fixtures · Methodology · Endpoint/Component Inventory · Auth & Authorization Matrix · Module-by-module success + negative/security scenarios · Security/Access findings (open vs fixed) · User remediation. Markdown template first; `.docx` via a script, with mandatory redaction pass.

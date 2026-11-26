@@ -18,4 +18,8 @@ jobs:
       - run: python3 skills/knowledge-placement/scripts/test_knowledge.py
       - run: python3 skills/project-dam/scripts/dam.py check examples/project-dam/PLAN-example.md
       - run: python3 skills/project-dam/scripts/dam.py check skills/project-dam/templates/dam-plan.template.md
+      - run: python3 skills/qa-report/scripts/build-report.py check examples/qa-report/qa-results-example.yaml
+      - run: python3 skills/qa-report/scripts/build-report.py check skills/qa-report/templates/qa-results.template.yaml
+      - run: python3 skills/qa-report/scripts/build-report.py render examples/qa-report/qa-results-example.yaml --out /tmp/qa-check.md && diff /tmp/qa-check.md examples/qa-report/QA-REPORT-example.md
+      - run: python3 skills/qa-report/scripts/redact.py --check examples/qa-report/QA-REPORT-example.md
       - run: jq -e . hooks/hooks.json .claude-plugin/plugin.json .claude-plugin/marketplace.json

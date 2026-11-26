@@ -2,7 +2,7 @@
 
 A public, secret-free harness of **skills, commands and workflows for [Claude Code](https://claude.com/claude-code)**. It keeps agents inside architectural boundaries, hardens request/response paths, hands work between sessions cheaply, slices big tasks into safe milestones, and produces evidence-based QA reports.
 
-> **Status: Phase 4 of 5, plus the always-on knowledge-placement rule.** Repo hygiene tooling, the **architecture skill + style registry**, the **request/response hardening skill** the **`/switch` handoff command**, **Project Dam** and **knowledge placement** are done. The other components are scoped in [docs/ROADMAP.md](docs/ROADMAP.md) and land phase by phase.
+> **Status: all five phases complete, plus the always-on knowledge-placement rule.** Repo hygiene tooling, the **architecture skill + style registry**, the **request/response hardening skill**, the **`/switch` handoff command**, **Project Dam**, the **QA report generator** and **knowledge placement** are done. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Components
 
@@ -14,7 +14,7 @@ A public, secret-free harness of **skills, commands and workflows for [Claude Co
 | `/switch` context handoff command + hooks | [`commands/switch.md`](commands/switch.md), [docs/switch.md](docs/switch.md) | ✅ Phase 3 |
 | Project Dam (incremental milestones) | [`skills/project-dam/`](skills/project-dam/SKILL.md) | ✅ Phase 4 |
 | **Knowledge placement** (rule + guard; keeps notes out of `src/`) | [`skills/knowledge-placement/`](skills/knowledge-placement/SKILL.md), [docs/knowledge-placement.md](docs/knowledge-placement.md) | ✅ Free tier, always on |
-| QA report generator (Markdown + optional `.docx`) | `skills/qa-report/` | ⏳ Phase 5 |
+| QA report generator (Markdown + optional `.docx`) | [`skills/qa-report/`](skills/qa-report/SKILL.md) | ✅ Phase 5 |
 
 > **Free tier:** everything in this repository is free (MIT). See [docs/tiers.md](docs/tiers.md) for what is always on.
 
@@ -87,6 +87,23 @@ Use the project-dam skill to break "bulk order import" into milestones, then imp
 
 It writes `.claude/dam/<slug>/PLAN.md` in your project (see [`examples/project-dam/`](examples/project-dam/PLAN-example.md)), runs one gated milestone at a time, and defers anything out of scope to a backlog. Helper: `python3 skills/project-dam/scripts/dam.py check|next|status <plan>`.
 
+**Report** execution-based QA results (Markdown + `.docx`):
+
+```text
+Use the qa-report skill to test the orders and auth endpoints on my local server with test accounts,
+then produce the report, with a retest section for fixed defects.
+```
+
+The agent runs the scenarios against a **local/dev/staging** target with test accounts, records real evidence in `qa-results.yaml` (no credentials), and a script computes the metrics, auth matrix and defect tables, redacts evidence, and renders the report:
+
+```bash
+python3 skills/qa-report/scripts/build-report.py check  qa-output/<date>/qa-results.yaml
+python3 skills/qa-report/scripts/build-report.py render qa-output/<date>/qa-results.yaml --docx
+python3 skills/qa-report/scripts/redact.py --check qa-output/<date>/QA-REPORT.md
+```
+
+Sections: executive summary and pass/fail metrics, scope, environment and actors/fixtures, methodology, inventory, auth and authorization matrix, module-by-module success and negative/security scenarios, defect findings (open vs fixed), and remediation. Example: [`examples/qa-report/`](examples/qa-report/QA-REPORT-example.md).
+
 **Refactor** toward a style:
 
 ```text
@@ -114,6 +131,7 @@ claude-harness/
     ├── architecture/        SKILL.md, references/, templates/
     ├── req-res-hardening/   SKILL.md, references/, templates/, scripts/scan.sh
     ├── project-dam/         SKILL.md, references/, templates/, scripts/dam.py
+    ├── qa-report/           SKILL.md, references/, templates/, scripts/build-report.py, redact.py
     └── knowledge-placement/ SKILL.md, references/, scripts/knowledge.py (+ tests)
 ```
 

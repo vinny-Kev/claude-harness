@@ -1,0 +1,309 @@
+# FICTIONAL example data for the qa-report skill (acme-shop-api does not exist).
+meta:
+  title: QA Verification Report - acme-shop-api v1.4
+  project: acme-shop-api (fictional)
+  date: 2026-11-26
+  tester: QA agent (Claude) with human reviewer
+  environment:
+    name: Local docker-compose
+    kind: local
+    target: http://localhost:3000
+    build: "commit a1b2c3d (working tree clean)"
+    database: PostgreSQL 16, seeded from fixtures/seed.sql
+    notes: No external services; payment provider stubbed
+
+summary: >
+  The orders and auth modules behave correctly on all success paths. Authorization testing found one
+  High-severity broken access control defect (any customer can read another customer's order) and one
+  Medium defect (login reveals which emails exist). One earlier High defect (password hash returned by
+  /login) was fixed and retested during this run.
+
+scope:
+  in:
+    - Auth (login, session), Orders (create, read, list), Admin (user list)
+    - Request validation and access control on those endpoints
+  out:
+    - Payment provider integration (stubbed), email delivery, load/performance testing
+
+methodology: >
+  Execution-based. The API was started locally from the reviewed commit and seeded with fixtures. Each scenario
+  was executed with curl against the running server using the actors below; the observed status code and response
+  body were compared with the expected policy. Negative and security scenarios cover missing/invalid auth, cross-user
+  object access (IDOR), mass assignment, injection probes and oversized input. Evidence is redacted by
+  scripts/redact.py before inclusion. No production systems or real user data were used.
+
+actors:
+  - {id: A0, role: Anonymous, description: No credentials, fixture: "-"}
+  - {id: A1, role: Customer (owner of order O-1001), description: Regular user, fixture: "qa_customer1@example.test (password in secret store)"}
+  - {id: A2, role: Customer (owner of order O-2001), description: Second regular user, fixture: "qa_customer2@example.test (password in secret store)"}
+  - {id: A3, role: Admin, description: Staff admin, fixture: "qa_admin@example.test (password in secret store)"}
+
+fixtures:
+  - {id: F1, description: "Orders O-1001 (A1) and O-2001 (A2) seeded with 2 line items each"}
+  - {id: F2, description: "Product catalog of 25 items"}
+
+inventory:
+  - {id: E1, module: Auth, kind: endpoint, name: Login, method: POST, path: /login, auth: public}
+  - {id: E2, module: Orders, kind: endpoint, name: Create order, method: POST, path: /orders, auth: customer}
+  - {id: E3, module: Orders, kind: endpoint, name: Get order, method: GET, path: "/orders/:id", auth: owner or admin}
+  - {id: E4, module: Orders, kind: endpoint, name: List my orders, method: GET, path: /orders, auth: customer}
+  - {id: E5, module: Admin, kind: endpoint, name: List users, method: GET, path: /admin/users, auth: admin}
+  - {id: E6, module: Orders, kind: endpoint, name: Update profile, method: PATCH, path: /me, auth: customer}
+
+scenarios:
+  - id: S1
+    module: Auth
+    inventory: E1
+    type: success
+    title: Valid credentials return a session
+    actor: A1
+    request: |
+      POST /login
+      {"email":"qa_customer1@example.test","password":"example-Passw0rd-not-real"}
+    expected: 200 with user summary and Set-Cookie; no password hash in body
+    actual: 200; body has id, email, displayName only
+    result: pass
+    evidence: |
+      HTTP/1.1 200 OK
+      Set-Cookie: session=example-session-value-123; HttpOnly; Secure; SameSite=Lax
+      {"id":101,"email":"qa_customer1@example.test","displayName":"QA One"}
+    authz: {expected: allow, actual: allow}
+  - id: S2
+    module: Auth
+    inventory: E1
+    type: negative
+    title: Wrong password is rejected
+    actor: A0
+    request: |
+      POST /login
+      {"email":"qa_customer1@example.test","password":"wrong"}
+    expected: 401 generic message
+    actual: 401 {"error":"Invalid credentials"}
+    result: pass
+    evidence: |
+      HTTP/1.1 401 Unauthorized
+      {"error":"Invalid credentials"}
+  - id: S3
+    module: Auth
+    inventory: E1
+    type: security
+    title: Unknown email returns the same response as wrong password
+    actor: A0
+    request: |
+      POST /login
+      {"email":"nobody@unknown-domain.io","password":"wrong"}
+    expected: 401 identical to S2 (no account enumeration)
+    actual: 404 {"error":"No such user"}
+    result: fail
+    defect: D2
+    evidence: |
+      HTTP/1.1 404 Not Found
+      {"error":"No such user"}
+  - id: S4
+    module: Auth
+    inventory: E1
+    type: security
+    title: Password hash is not returned by login (retest of D1)
+    actor: A1
+    request: POST /login with valid credentials, inspect response keys
+    expected: No passwordHash or internal fields
+    actual: Keys are id, email, displayName
+    result: pass
+    defect: D1
+    evidence: |
+      keys: ["id","email","displayName"]
+  - id: S5
+    module: Orders
+    inventory: E2
+    type: success
+    title: Customer creates an order
+    actor: A1
+    request: |
+      POST /orders
+      Cookie: session=example-session-value-123
+      {"items":[{"sku":"SKU-1","qty":2}]}
+    expected: 201 with order id and total
+    actual: 201 {"id":"O-1003","total":"39.98"}
+    result: pass
+    evidence: |
+      HTTP/1.1 201 Created
+      {"id":"O-1003","total":"39.98"}
+    authz: {expected: allow, actual: allow}
+  - id: S6
+    module: Orders
+    inventory: E2
+    type: security
+    title: Anonymous cannot create an order
+    actor: A0
+    request: POST /orders without cookie
+    expected: 401
+    actual: 401
+    result: pass
+    evidence: |
+      HTTP/1.1 401 Unauthorized
+    authz: {expected: deny, actual: deny}
+  - id: S7
+    module: Orders
+    inventory: E2
+    type: negative
+    title: Negative quantity is rejected
+    actor: A1
+    request: |
+      POST /orders
+      {"items":[{"sku":"SKU-1","qty":-5}]}
+    expected: 400 validation error naming the field
+    actual: 400 {"error":"items[0].qty must be >= 1"}
+    result: pass
+    evidence: |
+      HTTP/1.1 400 Bad Request
+      {"error":"items[0].qty must be >= 1"}
+  - id: S8
+    module: Orders
+    inventory: E3
+    type: success
+    title: Owner reads own order
+    actor: A1
+    request: GET /orders/O-1001 as A1
+    expected: 200
+    actual: 200
+    result: pass
+    evidence: |
+      HTTP/1.1 200 OK
+    authz: {expected: allow, actual: allow}
+  - id: S9
+    module: Orders
+    inventory: E3
+    type: security
+    title: Customer cannot read another customer's order (IDOR)
+    actor: A2
+    request: |
+      GET /orders/O-1001
+      Cookie: session=example-session-of-A2
+    expected: 404 (or 403); order not disclosed
+    actual: 200 with full order of A1 including shipping address
+    result: fail
+    defect: D3
+    evidence: |
+      HTTP/1.1 200 OK
+      {"id":"O-1001","userId":101,"shipping":{"name":"QA One","email":"jane.doe@gmail.com"}}
+    authz: {expected: deny, actual: allow}
+  - id: S10
+    module: Orders
+    inventory: E3
+    type: success
+    title: Admin reads any order
+    actor: A3
+    request: GET /orders/O-1001 as A3
+    expected: 200
+    actual: 200
+    result: pass
+    evidence: |
+      HTTP/1.1 200 OK
+    authz: {expected: allow, actual: allow}
+  - id: S11
+    module: Orders
+    inventory: E3
+    type: security
+    title: Anonymous cannot read an order
+    actor: A0
+    request: GET /orders/O-1001
+    expected: 401
+    actual: 401
+    result: pass
+    evidence: |
+      HTTP/1.1 401 Unauthorized
+    authz: {expected: deny, actual: deny}
+  - id: S12
+    module: Orders
+    inventory: E6
+    type: security
+    title: Mass assignment of role is ignored
+    actor: A1
+    request: |
+      PATCH /me
+      {"displayName":"QA One","role":"admin"}
+    expected: 200 and role unchanged
+    actual: 200; subsequent GET /admin/users as A1 returns 403
+    result: pass
+    evidence: |
+      HTTP/1.1 200 OK
+      {"id":101,"displayName":"QA One"}
+  - id: S13
+    module: Admin
+    inventory: E5
+    type: security
+    title: Customer cannot list users
+    actor: A1
+    request: GET /admin/users as A1
+    expected: 403
+    actual: 403
+    result: pass
+    evidence: |
+      HTTP/1.1 403 Forbidden
+    authz: {expected: deny, actual: deny}
+  - id: S14
+    module: Admin
+    inventory: E5
+    type: success
+    title: Admin lists users without credential fields
+    actor: A3
+    request: GET /admin/users as A3
+    expected: 200 list with id, email, role only
+    actual: 200; keys id,email,role
+    result: pass
+    evidence: |
+      HTTP/1.1 200 OK
+      [{"id":101,"email":"qa_customer1@example.test","role":"customer"}]
+    authz: {expected: allow, actual: allow}
+  - id: S15
+    module: Orders
+    inventory: E4
+    type: negative
+    title: Oversized request body is rejected
+    actor: A1
+    request: POST /orders with a 5 MB JSON body
+    expected: 413 before parsing
+    actual: Not executed; local proxy limit prevented the test
+    result: blocked
+    evidence: ""
+
+defects:
+  - id: D1
+    title: Login response included the password hash
+    severity: high
+    status: fixed
+    location: src/routes/auth.js:22
+    description: POST /login returned the whole user model including passwordHash.
+    impact: Offline cracking of the user's password.
+    fix: Return an allow-listed DTO (id, email, displayName); hide passwordHash at model level.
+    retest_evidence: "S4 re-run on commit a1b2c3d: response keys are id, email, displayName."
+  - id: D2
+    title: Login reveals whether an email is registered
+    severity: medium
+    status: open
+    location: src/routes/auth.js:19-21
+    description: Unknown email returns 404 "No such user"; wrong password returns 401 "Invalid credentials".
+    impact: Attackers can enumerate registered emails and target them with credential stuffing.
+    fix: Return the same 401 and message for both cases and add per-IP and per-account rate limiting.
+  - id: D3
+    title: Any customer can read any order (IDOR)
+    severity: high
+    status: open
+    location: src/routes/orders.js:33
+    description: GET /orders/:id loads the order by id without checking that it belongs to the caller.
+    impact: Customers can read other customers' orders, shipping addresses and emails.
+    fix: Query with the owner filter (id AND userId = caller) unless the caller is admin; return 404 when not found.
+
+remediation:
+  - audience: Developers
+    steps:
+      - "Fix D3 first: add an owner filter to the order lookup and add regression test S9 to the suite."
+      - "Fix D2: unify the login failure response and add rate limiting; re-run S2 and S3."
+      - "Add a body-size limit (2 MB) and re-run S15 on an environment without the proxy cap."
+  - audience: Operators / Product owners
+    steps:
+      - "Do not release v1.4 to customers until D3 is fixed and retested."
+      - "If v1.3 has the same order lookup, review access logs for cross-customer reads and notify affected customers per your policy."
+  - audience: End users
+    steps:
+      - "No action needed yet. If a data exposure is confirmed in production, you will be notified with guidance (e.g. watch for phishing using your order details)."
