@@ -20,14 +20,14 @@ A public, secret-free harness of **skills, commands and workflows for [Claude Co
 ### As a plugin (recommended)
 
 ```text
-/plugin marketplace add <owner>/claude-harness
+/plugin marketplace add vinny-Kev/claude-harness
 /plugin install claude-harness@claude-harness
 ```
 
 ### Manual (skills only)
 
 ```bash
-git clone https://github.com/<owner>/claude-harness.git
+git clone https://github.com/vinny-Kev/claude-harness.git
 mkdir -p ~/.claude/skills
 cp -r claude-harness/skills/architecture ~/.claude/skills/        # user-wide
 # or: cp -r claude-harness/skills/architecture <your-project>/.claude/skills/   # per-project
