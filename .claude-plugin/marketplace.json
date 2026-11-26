@@ -1,0 +1,12 @@
+{
+  "name": "claude-harness",
+  "description": "Marketplace wrapper so the harness can be installed with /plugin marketplace add.",
+  "owner": { "name": "claude-harness contributors" },
+  "plugins": [
+    {
+      "name": "claude-harness",
+      "source": "./",
+      "description": "Architecture enforcement, req/res hardening, /switch handoff, project dam, QA reports."
+    }
+  ]
+}

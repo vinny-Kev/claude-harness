@@ -1,0 +1,62 @@
+# ── Secrets & credentials (never commit) ───────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa*
+id_ed25519*
+*credentials*
+*.secret
+*.secrets
+secrets.*
+*-secrets.*
+!scripts/check-secrets.sh
+*.token
+.npmrc
+.pypirc
+.netrc
+.aws/
+.ssh/
+service-account*.json
+
+# ── Claude Code local/private state ─────────────────────────────────
+.claude/settings.local.json
+.claude/projects/
+.claude/handoff/
+.claude/sessions/
+CLAUDE.local.md
+
+# ── Generated reports & handoffs (may contain private project data) ─
+handoff/
+HANDOFF*.md
+!examples/**/HANDOFF*.md
+qa-output/
+*.docx
+!examples/**/*.docx
+reports/
+
+# ── Databases, dumps, logs ──────────────────────────────────────────
+*.sqlite
+*.sqlite3
+*.db
+*.sql.gz
+*.dump
+*.bak
+*.log
+
+# ── Tooling / OS noise ──────────────────────────────────────────────
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
