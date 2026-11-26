@@ -15,6 +15,7 @@ fi
 
 fail=0
 self="scripts/check-secrets.sh"
+libf="scripts/lib/secret-patterns.txt"
 
 # 1. Forbidden filenames (allow explicit example/template files).
 name_re='(^|/)(\.env(\..+)?|.*\.(pem|key|p12|pfx|jks|keystore|token)|id_(rsa|ed25519|ecdsa).*|.*credentials.*|\.npmrc|\.pypirc|\.netrc|service-account.*\.json)$'
@@ -26,22 +27,9 @@ for f in "${files[@]}"; do
 done
 
 # 2. Secret-shaped content. Each pattern is ERE.
-patterns=(
-  'AKIA[0-9A-Z]{16}'                                   # AWS access key id
-  'ASIA[0-9A-Z]{16}'                                   # AWS temp key id
-  'gh[pousr]_[A-Za-z0-9]{36,}'                         # GitHub tokens
-  'github_pat_[A-Za-z0-9_]{50,}'                       # GitHub fine-grained PAT
-  'sk-ant-[A-Za-z0-9_-]{20,}'                          # Anthropic keys
-  'sk-[A-Za-z0-9]{32,}'                                # OpenAI-style keys
-  'xox[baprs]-[A-Za-z0-9-]{10,}'                       # Slack tokens
-  'AIza[0-9A-Za-z_-]{35}'                              # Google API key
-  '-----BEGIN [A-Z ]*PRIVATE KEY-----'                 # PEM private keys
-  'eyJ[A-Za-z0-9_-]{15,}\.[A-Za-z0-9_-]{15,}\.[A-Za-z0-9_-]{10,}'  # JWT
-  '[a-z][a-z0-9+.-]*://[^/[:space:]:@]+:[^/[:space:]@<>{}$]{3,}@' # URL with inline password
-  '(password|passwd|secret|api[_-]?key|access[_-]?token|auth[_-]?token)["'\'']?[[:space:]]*[:=][[:space:]]*["'\''][^"'\''<>{}$[:space:]]{12,}["'\'']'
-)
+mapfile -t patterns < <(grep -vE '^(#|$)' "$(dirname "$0")/lib/secret-patterns.txt")
 for f in "${files[@]}"; do
-  [[ "$f" == "$self" || ! -f "$f" ]] && continue
+  [[ "$f" == "$self" || "$f" == "$libf" || ! -f "$f" ]] && continue
   grep -Iq . "$f" 2>/dev/null || continue            # skip binaries
   for p in "${patterns[@]}"; do
     if hits=$(grep -nE -- "$p" "$f" 2>/dev/null | grep -viE 'REDACTED|placeholder|example|<[A-Z_]+>|xxxx|your[_-]' ); [[ -n "$hits" ]]; then

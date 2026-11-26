@@ -4,7 +4,7 @@
 |---|---|---|
 | **1** ✅ | Repo skeleton, standards, `architecture` skill, 4 registry styles, validators | `validate-registry`, `validate-skills`, `check-secrets` pass |
 | **2** ✅ | `skills/req-res-hardening/` | Scans routes/validators/middleware/serializers; prioritized findings with `file:line` and concrete fixes; checklists for inbound + outbound; sample finding report |
-| **3** | `/switch` command, hooks, scripts | See design below; handoff file is self-sufficient in a fresh session |
+| **3** ✅ | `/switch` command, hooks, scripts | See design below; handoff file is self-sufficient in a fresh session |
 | **4** | `skills/project-dam/` | Turns a big task into ordered milestones (scope, boundaries, verification, stop conditions) |
 | **5** | `skills/qa-report/` | Markdown report template + optional `.docx` generation; redaction enforced |
 
@@ -15,7 +15,7 @@
 - **Outbound**: password hashes, secrets/tokens/OTPs, PII, stack traces and DB error codes, cross-tenant and existence leaks (404 vs 403, timing, verbose errors).
 - **Output**: findings ranked Critical → Low, each with `file:line`, evidence, exploit sketch, and a concrete patch.
 
-## Phase 3 — `/switch` (design, to be verified against Claude Code docs before building)
+## Phase 3 — `/switch` (built; see [switch.md](switch.md) for verified capabilities)
 
 Known constraints to confirm: a slash command cannot invoke another slash command or built-ins like `/model` / `/exit`.
 

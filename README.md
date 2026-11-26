@@ -2,7 +2,7 @@
 
 A public, secret-free harness of **skills, commands and workflows for [Claude Code](https://claude.com/claude-code)**. It keeps agents inside architectural boundaries, hardens request/response paths, hands work between sessions cheaply, slices big tasks into safe milestones, and produces evidence-based QA reports.
 
-> **Status: Phase 2 of 5.** Repo hygiene tooling, the **architecture skill + style registry** and the **request/response hardening skill** are done. The other components are scoped in [docs/ROADMAP.md](docs/ROADMAP.md) and land phase by phase.
+> **Status: Phase 3 of 5.** Repo hygiene tooling, the **architecture skill + style registry**, the **request/response hardening skill** and the **`/switch` handoff command** are done. The other components are scoped in [docs/ROADMAP.md](docs/ROADMAP.md) and land phase by phase.
 
 ## Components
 
@@ -11,7 +11,7 @@ A public, secret-free harness of **skills, commands and workflows for [Claude Co
 | Architecture skill (Compose & Register / Read & Enforce) | [`skills/architecture/`](skills/architecture/SKILL.md) | ✅ Phase 1 |
 | Architecture style registry (MVC, Layered, Hexagonal, Service–Middleware–Aggregate) | [`registry/architectures/`](registry/architectures/README.md) | ✅ Phase 1 |
 | Request & response hardening skill | [`skills/req-res-hardening/`](skills/req-res-hardening/SKILL.md) | ✅ Phase 2 |
-| `/switch` context handoff command + hooks | `commands/switch.md`, `hooks/`, `scripts/` | ⏳ Phase 3 |
+| `/switch` context handoff command + hooks | [`commands/switch.md`](commands/switch.md), [docs/switch.md](docs/switch.md) | ✅ Phase 3 |
 | Project Dam (incremental milestones) | `skills/project-dam/` | ⏳ Phase 4 |
 | QA report generator (Markdown + optional `.docx`) | `skills/qa-report/` | ⏳ Phase 5 |
 
@@ -60,6 +60,13 @@ and give me prioritized findings with file:line and fixes. Report only, don't ch
 
 A sample report on a fictional vulnerable app is in [`examples/req-res-hardening/`](examples/req-res-hardening/sample-report.md). The optional candidate scanner is `bash skills/req-res-hardening/scripts/scan.sh <path>`.
 
+**Hand off** to a fresh session (cheap, no giant re-read):
+
+```text
+/switch sonnet
+```
+then `/model sonnet` and `/clear` in the same window (the plugin hook loads the handoff), or `/exit` and run `scripts/switch-launch.sh sonnet`. A slash command cannot run `/model` or `/exit` itself; see [docs/switch.md](docs/switch.md).
+
 **Refactor** toward a style:
 
 ```text
@@ -75,12 +82,13 @@ claude-harness/
 ├── .claude-plugin/          plugin.json, marketplace.json
 ├── .githooks/pre-commit     secret scan + registry validation
 ├── .github/workflows/       CI: same checks on every push/PR
-├── commands/                slash commands (Phase 3: switch.md)
-├── hooks/                   hook configs (Phase 3)
-├── docs/                    ROADMAP.md, conventions.md
+├── commands/                switch.md
+├── hooks/                   hooks.json (SessionStart, UserPromptSubmit, PreCompact)
+├── templates/               handoff.template.md
+├── docs/                    ROADMAP.md, conventions.md, switch.md
 ├── examples/                sanitized, fictional examples only
 ├── registry/architectures/  reusable architecture specs
-├── scripts/                 check-secrets.sh, validate-registry.py, validate-skills.py
+├── scripts/                 check-secrets.sh, validate-*.py, switch-*.sh, hook scripts
 └── skills/
     ├── architecture/        SKILL.md, references/, templates/
     └── req-res-hardening/   SKILL.md, references/, templates/, scripts/scan.sh
